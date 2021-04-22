@@ -60,7 +60,7 @@ import sys
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-
+import os
 
 
 
@@ -79,26 +79,57 @@ for artist_data in table.find_all('tr')[1:]:
     track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
     artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
     streams = artist_data.find('td', class_ = 'chart-table-streams').text
+    streams = streams.replace(",", "")
     rank = artist_data.find('td', class_ = 'chart-table-position').text
-    #tup_list.append((track_name, artist, streams, rank))
+    tup_list.append((track_name,artist,streams,rank))
     #streams = int(streams)
     dic[artist] = dic.get(artist, 0) +1
-    streams_dic[artist] = streams_dic.get(artist, streams) + streams
+    streams_dic[artist] = streams_dic.get(artist, int(streams)) + int(streams)
 
 sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
 sorted_streams = sorted(streams_dic.items(), key = lambda x:x[1], reverse = True)
-
+for i in range(len(sorted_streams)):
+    print(sorted_streams[i][0],sorted_streams[i][1])
+    
+#print(sorted_streams[:10])
+#print(sorted_dic[:10])
 #creating a function to find the artist that appears the most on the charts
 def first_artist():
     dic = {}
+    lst = []
+    streams_dic = {}
     table = soup.find('table', class_ = 'chart-table')
     for artist_data in table.find_all('tr')[1:]:
         track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
         artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
         streams = artist_data.find('td', class_ = 'chart-table-streams').text
+        streams = streams.replace(",", "")
         dic[artist] = dic.get(artist, 0) +1
+        streams_dic[artist] = streams_dic.get(artist, int(streams)) + int(streams)
+        #lst.append((track_name, streams))
     sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-    return sorted_dic[0][0]
+    number_one = sorted_dic[0][0]
+    
+    sorted_streams = sorted(streams_dic.items(), key = lambda x:x[1], reverse = True)
+    #print(sorted_streams)
+    #print (sorted_streams[0])
+    total_streams = 0
+    for item in sorted_streams: 
+        if item[0]== number_one:
+            total_streams += item[1]
+    #print(total_streams)
+    
+    final_tup_list = (number_one, total_streams)
+    return final_tup_list
+    #print(final_tup_list)
+    #for artist in final_tup_list:
+        #print(artist[0][0])
+   # print(streams_dic)
+   # print(number_one)
+    #return (total_streams)
+
+
+    #return sorted_dic[0][0]
 
 def second_artist():
     dic = {}
@@ -147,7 +178,7 @@ def fifth_artist():
 
 
 
-print(sorted_dic[:10])
+#print(sorted_dic[:10])
 #print(sorted_streams)
 number_one_artist = sorted_streams[0][0]
 number_two_artist = sorted_streams[1][0]
@@ -166,18 +197,25 @@ def setUpDatabase(db_name):
      cur = conn.cursor()
      return cur, conn
 
-def setUpSongTable(first, second, third, fourth, fifth, cur,conn):
+def setUpSongTable(first,cur,conn):
     cur.execute('DROP TABLE IF EXISTS streams')
-    cur.execute('CREATE TABLE IF NOT EXISTS streams("Artist TEXT" TEXT Primary Key, "Streams" TEXT)')
+    cur.execute('CREATE TABLE IF NOT EXISTS streams("Artist" TEXT Primary Key, "Streams" INTEGER)')
+    for artist in first:
+        cur.execute("INSERT INTO streams (Artist, Streams) VALUES (?,?)", (artist[0][0], artist[0][1]))
+    conn.commit()
+    # for i in range(len(sorted_streams)):
+    #     cur.execute("INSERT INTO Categories (artist),streams) VALUES (?,?)",(sorted_streams[i][0],sorted_streams[i][1]))
+    # conn.commit()
     
 if __name__ == "__main__":
     first  = first_artist()
-    second = second_artist()
-    third = third_artist()
-    fourth = fourth_artist()
-    fifth = fifth_artist()
+    # second = second_artist()
+    # third = third_artist()
+    # fourth = fourth_artist()
+    # fifth = fifth_artist()
     #print(first, second, third, fourth, fifth)
-    
-    conn = sqlite3.connect('steams.sqlite')
-    cur = conn.cursor()
-    setUpSongTable(first, second, third, fourth, fifth, cur, conn)
+    cur, conn = setUpDatabase('streams.db')
+    setUpSongTable(first,cur,conn)
+    #conn = sqlite3.connect('streams.db')
+    #cur = conn.cursor()
+    #setUpSongTable(cur,conn)
