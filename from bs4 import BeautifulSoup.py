@@ -1,56 +1,3 @@
-# import requests
-# from bs4 import BeautifulSoup
-
-
-
-# url = "https://spotifycharts.com/regional"
-# resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-# soup = BeautifulSoup(resp.content, 'html.parser')
-# #print(soup)
-# tup_list = []
-# table = soup.find('table', class_ = 'chart-table')
-# for artist_data in table.find_all('tr')[1:]:
-#     track_name = artist_data.find('td', class_ = 'chart-table-track').contents[0].text
-#     artist = artist_data.find('td', class_ = 'chart-table-track').contents[1].text[2:]
-#     streams = artist_data.find('td', class_ = 'chart-table-streams').text
-#     rank = artist_data.find('td', class_ = 'chart-table-position').text
-#     tup_list.append(track_name, artist, streams, rank)
-# print(tup_list)
-#streams = {}
-# for artist in soup.findAll('td', class_ = 'chart-table-track'):
-#     for new in artist.findAll('span'):
-#         dic[new] = dic.get(new,0) + 1
-# sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-# print(sorted_dic)
-#var = soup.findAll('td', class_ = 'chart-table-track')
-#print(var)
-# for artist in soup.findAll('td', class_ = 'chart-table-track'):
-#     print(artist)
-#     art = artist.find('span')
-#     text = art.text.strip()
-#     artist_name = text.replace("by ", "")
-#     dic[artist_name] = dic.get(artist_name, 0) +1
-# sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-    
-# print(sorted_dic[:10])
-#     #for new in artist.findAll('span'):
-
-# num_streams = {}     
-# for artist in soup.findAll('td', class_ = 'chart-table-track'):
-#     art = artist.find('span')
-#     text = art.text.strip()
-#     artist_name = text.replace("by ", "")
-#     #for streams in soup.findAll('td', class_ = 'chart-table-streams'):
-#         #number = streams.text.strip()
-#         #num_streams.append(number)
-#         #num_streams[artist_name] = dic.get(artist_name, 0) + streams
-# #print(num_streams)
-
-
-
-# top_ten = sorted_dic[:10]
-# #print(top_ten)
-
 import requests
 from bs4 import BeautifulSoup
 import urllib.request
@@ -88,8 +35,8 @@ for artist_data in table.find_all('tr')[1:]:
 
 sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
 sorted_streams = sorted(streams_dic.items(), key = lambda x:x[1], reverse = True)
-for i in range(len(sorted_streams)):
-    print(sorted_streams[i][0],sorted_streams[i][1])
+#for i in range(len(sorted_streams)):
+    #print(sorted_streams[i][0],sorted_streams[i][1])
     
 #print(sorted_streams[:10])
 #print(sorted_dic[:10])
@@ -109,19 +56,65 @@ def first_artist():
         #lst.append((track_name, streams))
     sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
     number_one = sorted_dic[0][0]
-    
+    #print(sorted_dic)
     sorted_streams = sorted(streams_dic.items(), key = lambda x:x[1], reverse = True)
     #print(sorted_streams)
     #print (sorted_streams[0])
+    #final_tup_list = []
+    result = {}
+    for i in sorted_streams:
+        result[i[0]] = list(i[:])
+    for i in sorted_dic:
+        if i[0] in result:
+            result[i[0]].extend(list(i[1:]))
+    final_result = []
+    for i,j in result.items():
+        final_result.append(tuple(j))
+    print(final_result)
     total_streams = 0
     for item in sorted_streams: 
         if item[0]== number_one:
             total_streams += item[1]
-    #print(total_streams)
+        #final_tup_list.append(item, total_streams)
     
-    final_tup_list = (number_one, total_streams)
-    return final_tup_list
+    #final_tup_list = [(number_one, total_streams)]
     #print(final_tup_list)
+    
+    return final_result
+
+def second_artist():
+    dic = {}
+    lst = []
+    streams_dic = {}
+    table = soup.find('table', class_ = 'chart-table')
+    for artist_data in table.find_all('tr')[1:]:
+        track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
+        artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
+        streams = artist_data.find('td', class_ = 'chart-table-streams').text
+        streams = streams.replace(",", "")
+        dic[artist] = dic.get(artist, 0) +1
+        streams_dic[artist] = streams_dic.get(artist, int(streams)) + int(streams)
+            #lst.append((track_name, streams))
+    sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
+    number_one = sorted_dic[0][0]
+        #print(sorted_dic)
+    sorted_streams = sorted(streams_dic.items(), key = lambda x:x[1], reverse = True)
+        #print(sorted_streams)
+        #print (sorted_streams[0])
+        #final_tup_list = []
+    total_streams = 0
+    for item in sorted_streams: 
+        if item[0]== number_one:
+            total_streams += item[1]
+        #final_tup_list.append(item, total_streams)
+    
+    #final_tup_list = [(number_one, total_streams)]
+    #print(final_tup_list)
+    
+    return sorted_dic
+    #print(lstt)
+    #return final_tup_list
+
     #for artist in final_tup_list:
         #print(artist[0][0])
    # print(streams_dic)
@@ -130,52 +123,6 @@ def first_artist():
 
 
     #return sorted_dic[0][0]
-
-def second_artist():
-    dic = {}
-    table = soup.find('table', class_ = 'chart-table')
-    for artist_data in table.find_all('tr')[1:]:
-        track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
-        artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
-        streams = artist_data.find('td', class_ = 'chart-table-streams').text
-        dic[artist] = dic.get(artist, 0) +1
-    sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-    return sorted_dic[1][0]
-def third_artist():
-    dic = {}
-    table = soup.find('table', class_ = 'chart-table')
-    for artist_data in table.find_all('tr')[1:]:
-        track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
-        artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
-        streams = artist_data.find('td', class_ = 'chart-table-streams').text
-        dic[artist] = dic.get(artist, 0) +1
-    sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-    return sorted_dic[2][0]
-
-def fourth_artist():
-    dic = {}
-    table = soup.find('table', class_ = 'chart-table')
-    for artist_data in table.find_all('tr')[1:]:
-        track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
-        artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
-        streams = artist_data.find('td', class_ = 'chart-table-streams').text
-        dic[artist] = dic.get(artist, 0) +1
-    sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-    return sorted_dic[3][0]
-
-def fifth_artist():
-    dic = {}
-    table = soup.find('table', class_ = 'chart-table')
-    for artist_data in table.find_all('tr')[1:]:
-        track_name = artist_data.find('td', class_ = 'chart-table-track').contents[1].contents[0]
-        artist = artist_data.find('td', class_ = 'chart-table-track').contents[3].text[3:]
-        streams = artist_data.find('td', class_ = 'chart-table-streams').text
-        dic[artist] = dic.get(artist, 0) +1
-    sorted_dic = sorted(dic.items(), key = lambda x:x[1], reverse = True)
-    return sorted_dic[4][0]
-
-
-
 
 
 #print(sorted_dic[:10])
@@ -197,25 +144,26 @@ def setUpDatabase(db_name):
      cur = conn.cursor()
      return cur, conn
 
-def setUpSongTable(first,cur,conn):
+def setUpSongTable(first, cur,conn):
     cur.execute('DROP TABLE IF EXISTS streams')
-    cur.execute('CREATE TABLE IF NOT EXISTS streams("Artist" TEXT Primary Key, "Streams" INTEGER)')
+    cur.execute('CREATE TABLE IF NOT EXISTS streams(Artist TEXT PRIMARY KEY, Streams INTEGER, Occurance INTEGER)')
     for artist in first:
-        cur.execute("INSERT INTO streams (Artist, Streams) VALUES (?,?)", (artist[0][0], artist[0][1]))
+        cur.execute("INSERT INTO streams (Artist, Streams, Occurance) VALUES (?,?,?)", (artist[0], artist[1],artist[2]))
     conn.commit()
+
     # for i in range(len(sorted_streams)):
     #     cur.execute("INSERT INTO Categories (artist),streams) VALUES (?,?)",(sorted_streams[i][0],sorted_streams[i][1]))
     # conn.commit()
     
 if __name__ == "__main__":
     first  = first_artist()
-    # second = second_artist()
+    #second = second_artist()
     # third = third_artist()
     # fourth = fourth_artist()
     # fifth = fifth_artist()
     #print(first, second, third, fourth, fifth)
     cur, conn = setUpDatabase('streams.db')
-    setUpSongTable(first,cur,conn)
+    setUpSongTable(first, cur,conn)
     #conn = sqlite3.connect('streams.db')
     #cur = conn.cursor()
     #setUpSongTable(cur,conn)
