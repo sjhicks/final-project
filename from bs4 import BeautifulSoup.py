@@ -140,4 +140,11 @@ if __name__ == "__main__":
     cur, conn = setUpDatabase('streams.db')
     setUpSongTable(first, average,cur,conn)
     barchart_averages()
+    filename = open("spotifyfile.txt", 'w')
+    filename.write("We found the top 10 artists with the highest average streams on the top 200 charts. Using those songs, we found each artist's average popularity. Spotify measures popularity on a scale of 0 to 100.")
+    filename.write('\n')
+    for elem in barchart_averages():
+        filename.write("{} has an average streams of {}".format(elem[0], elem[1]))
+        filename.write('\n')
+    filename.close()
     
