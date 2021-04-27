@@ -18,7 +18,8 @@ resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
 
 soup = BeautifulSoup(resp.content, 'html.parser')
 
-#creating a function to find the artist that appears the most on the charts
+#creating a function to find information on artists that are on Spotify's top 200 charts
+#the info includes the artist's name, total amount of streams, and how often they are on the charts
 def find_artist_info():
     dic = {}
     lst = []
@@ -35,8 +36,8 @@ def find_artist_info():
     number_one = sorted_dic[0][0] 
     sorted_streams = sorted(streams_dic.items(), key = lambda x:x[1], reverse = True)
 
-    result = {}
     #combining the two dictionaries into a tuble list
+    result = {}
     for i in sorted_streams:
         result[i[0]] = list(i[:])
     for i in sorted_dic:
@@ -52,6 +53,7 @@ def find_artist_info():
             total_streams += item[1]
     return final_result
 
+#this function finds the average amount of streams an artist gets on the charts 
 def get_averages(lst):
     average_streams = []
     for artist in lst:
@@ -74,8 +76,26 @@ def setUpSongTable(info, average, cur,conn):
         cur.execute("INSERT INTO streams (Artist, Streams, Occurance, Average) VALUES (?,?,?,?)", (artist[0], artist[1],artist[2],artist[3]))
     conn.commit()
 
+def setUpAverageTable(average, cur,conn):
+    cur.execute('DROP TABLE IF EXISTS average')
+    cur.execute('CREATE TABLE IF NOT EXISTS average(Artist TEXT PRIMARY KEY, Average REAL)')
+    for artist in average:
+        cur.execute("INSERT INTO average (Artist, Average) VALUES (?,?)", (artist[0],artist[3]))
+    conn.commit()
+
+#compares the top 10 artists that from deezer that are on the spotify charts with how many streams they get on Spotify
+def setUpComparison(cur,conn):
+    cur.execute('DROP TABLE IF EXISTS comparison')
+    cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT PRIMARY KEY, streams INTEGER)')
+    cur.execute('SELECT Top100Songs.name, streams.streams FROM Top100Songs JOIN streams ON Top100Songs.name = streams.artist')
+    info = cur.fetchall()
+    print(info)
+    for artist in info[:10]:
+        cur.execute("INSERT INTO comparison(Artist, streams) VALUES (?,?)", (artist[0],artist[1]))
+    conn.commit()
+
 def barchart_averages():
-    cur.execute("SELECT * FROM streams")
+    #cur.execute("SELECT * FROM streams")
     label_name = []
     average_streams = []
     for row in average:
@@ -99,7 +119,9 @@ if __name__ == "__main__":
     info  = find_artist_info()
     average = get_averages(info)
     cur, conn = setUpDatabase('streams.db')
-    setUpSongTable(info, average,cur,conn)
+    setUpSongTable(info, average, cur, conn)
+    setUpAverageTable(average, cur, conn)
+    setUpComparison(cur,conn)
     barchart_averages()
     filename = open("spotifyfile.txt", 'w')
     filename.write("We found the amount of times an artist appeared on the top 200 charts and their total amount of streams on the top 200 charts. Using those two data points, we found each artist's average amount of streams on the top 200 charts and organized it by the top 10.")
