@@ -67,7 +67,7 @@ def setUpSongTable(info, cur,conn):
     cur.execute('CREATE TABLE IF NOT EXISTS streams(Artist TEXT, Streams INTEGER, Occurance INTEGER)')
     for artist in info:
         if index < 25:
-            cur.execute("INSERT INTO streams (Artist, Streams, Occurance) VALUES (?,?,?)", (artist[0], artist[1],artist[2]))
+            cur.execute("INSERT OR IGNORE INTO streams (Artist, Streams, Occurance) VALUES (?,?,?)", (artist[0], artist[1],artist[2]))
             index += 1
         else:
             break
@@ -88,7 +88,7 @@ def get_averages(cur,conn):
 def setUpAverageTable(average, cur,conn):
     cur.execute('CREATE TABLE IF NOT EXISTS average_streams(Artist TEXT, Average REAL)')
     for artist in average:
-        cur.execute("INSERT INTO average_streams (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
+        cur.execute("INSERT OR IGNORE INTO average_streams (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
     conn.commit()
 
 #compares the artists that are similar from the deezer charts and spotify charts and plots their average streams from spotify and average ranks from deezer
@@ -98,7 +98,7 @@ def setUpComparison(cur,conn):
     info = cur.fetchall()
     print(info)
     for artist in info[:10]:
-        cur.execute("INSERT INTO comparison(Artist, average_streams, average_rank) VALUES(?,?,?)", (artist[0],artist[1],artist[2]))
+        cur.execute("INSERT OR IGNORE INTO comparison(Artist, average_streams, average_rank) VALUES(?,?,?)", (artist[0],artist[1],artist[2]))
     conn.commit()
 
     average_rank = []

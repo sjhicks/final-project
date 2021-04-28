@@ -86,7 +86,7 @@ def findAverageRank(cur, conn):
 def setUpAverageTable(ranks, cur,conn):
     cur.execute('CREATE TABLE IF NOT EXISTS average_ranks(Artist TEXT PRIMARY KEY, Average REAL)')
     for artist in ranks:
-        cur.execute("INSERT INTO average_ranks (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
+        cur.execute("INSERT OR IGNORE INTO average_ranks (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
     conn.commit()
 
 def createBarGraph2(tuple_list):
