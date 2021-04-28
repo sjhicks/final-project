@@ -61,9 +61,9 @@ def setUpDatabase(db_name):
      return cur, conn
 
 def setUpSongTable(info, cur,conn):
-    cur.execute('DROP TABLE IF EXISTS streams')
+    #cur.execute('DROP TABLE IF EXISTS streams')
     index = 0
-    cur.execute('CREATE TABLE IF NOT EXISTS streams(Artist TEXT PRIMARY KEY, Streams INTEGER, Occurance INTEGER)')
+    cur.execute('CREATE TABLE IF NOT EXISTS streams(Artist TEXT, Streams INTEGER, Occurance INTEGER)')
     for artist in info:
         if index < 25:
             cur.execute("INSERT INTO streams (Artist, Streams, Occurance) VALUES (?,?,?)", (artist[0], artist[1],artist[2]))
@@ -85,17 +85,17 @@ def get_averages(cur,conn):
     return(sorted_average)
 
 def setUpAverageTable(average, cur,conn):
-    cur.execute('DROP TABLE IF EXISTS average')
-    cur.execute('CREATE TABLE IF NOT EXISTS average(Artist TEXT PRIMARY KEY, Average REAL)')
+    #cur.execute('DROP TABLE IF EXISTS average_streams')
+    cur.execute('CREATE TABLE IF NOT EXISTS average_streams(Artist TEXT, Average REAL)')
     for artist in average:
-        cur.execute("INSERT INTO average (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
+        cur.execute("INSERT INTO average_streams (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
     conn.commit()
 
 #compares the artists that are similar from the deezer charts and spotify charts and plots their average streams from spotify and average ranks from deezer
 def setUpComparison(cur,conn):
-    cur.execute('DROP TABLE IF EXISTS comparison')
-    cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT PRIMARY KEY, average_streams INTEGER, average_rank INTEGER)')
-    cur.execute('SELECT average.Artist, average.Average, average_ranks.Average FROM average JOIN average_ranks ON average.Artist = average_ranks.Artist')
+    #cur.execute('DROP TABLE IF EXISTS comparison')
+    cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT, average_streams INTEGER, average_rank INTEGER)')
+    cur.execute('SELECT average_streams.Artist, average_streams.Average, average_ranks.Average FROM average_streams JOIN average_ranks ON average_streams.Artist = average_ranks.Artist')
     info = cur.fetchall()
     print(info)
     for artist in info[:10]:
@@ -137,7 +137,7 @@ def barchart_averages():
 
 if __name__ == "__main__":
     info  = find_artist_info()
-    cur, conn = setUpDatabase('streams.db')
+    cur, conn = setUpDatabase('final_data.db')
     setUpSongTable(info, cur, conn)
     average = get_averages(cur,conn)
     setUpAverageTable(average, cur, conn)
@@ -145,9 +145,9 @@ if __name__ == "__main__":
     get_averages( cur,conn)
     barchart_averages()
     filename = open("spotifyfile.txt", 'w')
-    filename.write("We found the amount of times an artist appeared on the top 200 charts and their total amount of streams on the top 200 charts. Using those two data points, we found each artist's average amount of streams on the top 200 charts and organized it by the top 10.")
+    filename.write("We found the amount of times an artist appeared on the top 200 charts and their total amount of streams on the top 200 charts. Using those two data points, we found each artist's average amount of streams on the top 200 charts and organized it by the average streams.")
     filename.write('\n')
-    for elem in barchart_averages():
+    for elem in average:
         filename.write("{} has an average streams of {}".format(elem[0], elem[1]))
         filename.write('\n')
     filename.close()

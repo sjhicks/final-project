@@ -21,7 +21,7 @@ def setUpDatabase(db_name):
     return cur, conn
 
 def setUpSongsTable(tracks, cur, conn):
-    cur.execute('DROP TABLE IF EXISTS Top100Songs')
+    #cur.execute('DROP TABLE IF EXISTS Top100Songs')
     cur.execute('CREATE TABLE IF NOT EXISTS Top100Songs (title TEXT PRIMARY KEY, artist text, album TEXT, duration INTEGER, rank INTEGER)')
     for song in tracks['tracks']['data']:
         title = song['title']
@@ -85,7 +85,7 @@ def findAverageRank(cur, conn):
     return sorted_averages
 
 def setUpAverageTable(ranks, cur,conn):
-    cur.execute('DROP TABLE IF EXISTS average_ranks')
+    #cur.execute('DROP TABLE IF EXISTS average_ranks')
     cur.execute('CREATE TABLE IF NOT EXISTS average_ranks(Artist TEXT PRIMARY KEY, Average REAL)')
     for artist in ranks:
         cur.execute("INSERT INTO average_ranks (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
@@ -111,7 +111,7 @@ def createBarGraph2(tuple_list):
 
 def main():
     data = d
-    cur, conn = setUpDatabase('streams.db')
+    cur, conn = setUpDatabase('final_data.db')
     setUpSongsTable(data, cur, conn)
     sorted_dict = findArtistTopSongsCount(cur, conn)
     createBarGraph(sorted_dict)
@@ -119,10 +119,10 @@ def main():
     setUpAverageTable(ranks, cur,conn)
     createBarGraph2(ranks)
     filename = open('deezerfile.txt', 'w')
-    filename.write("We found the amount of times an artist appeared in the top 100 charts for the US and the average rank of their songs in the top 100 charts for the US")
+    filename.write("We found the average rank of each artist's songs in the top 100 for the US. Each rank is out of a million, with those being closests to a million ranked the highest based on total number of streams.")
     filename.write('\n')
-    for elem in findArtistTopSongsCount(cur, conn):
-        filename.write('{} has {} song(s) in the top 100 charts'.format(elem[0], elem[1]))
+    for elem in findAverageRank(cur, conn):
+        filename.write('{} has an average ranking of {} out of a million based on songs in the top 100 charts'.format(elem[0], elem[1]))
         filename.write('\n')
     filename.close()
 
