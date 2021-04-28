@@ -98,13 +98,26 @@ def setUpAverageTable(average, cur,conn):
 #compares the top 10 artists that are from deezer that are on the spotify charts with how many average streams they get on Spotify and what their average rank is on Deezer
 def setUpComparison(cur,conn):
     cur.execute('DROP TABLE IF EXISTS comparison')
-    cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT, streams INTEGER)')
-    cur.execute('SELECT Top100Songs.name, streams.streams FROM Top100Songs JOIN streams ON Top100Songs.name = streams.artist')
+    cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT PRIMARY KEY, average_streams INTEGER, average_rank INTEGER)')
+    cur.execute('SELECT average.Artist, average.Average, average_ranks.Average FROM average JOIN average_ranks ON average.Artist = average_ranks.Artist')
     info = cur.fetchall()
     print(info)
     for artist in info:
-        cur.execute("INSERT INTO comparison(Artist, streams) VALUES (?,?)", (artist[0],artist[1]))
+        cur.execute("INSERT INTO comparison(Artist, average_streams, average_rank) VALUES(?,?,?)", (artist[0],artist[1],artist[2]))
     conn.commit()
+
+    average_rank = []
+    average_streams = []
+    for row in info:
+        average_streams.append(row[1])
+    for row2 in info:
+        average_rank.append(row2[2])
+    plt.scatter(average_rank, average_streams)
+    plt.xlabel("Average Rank")
+    plt.ylabel("Average Streams")
+    plt.title("Average Stream versus Average Rank of top 10 common artists from deezer to spotify")
+    plt.savefig("scatterplot.png")
+    plt.show()
 
 def barchart_averages():
     label_name = []
@@ -150,7 +163,7 @@ if __name__ == "__main__":
     setUpComparison(cur,conn)
     get_averages( cur,conn)
     barchart_averages()
-    makeScatterplot(info)
+    #makeScatterplot(info)
     filename = open("spotifyfile.txt", 'w')
     filename.write("We found the amount of times an artist appeared on the top 200 charts and their total amount of streams on the top 200 charts. Using those two data points, we found each artist's average amount of streams on the top 200 charts and organized it by the top 10.")
     filename.write('\n')
