@@ -52,16 +52,6 @@ def find_artist_info():
         if item[0]== number_one:
             total_streams += item[1]
     return final_result
-
-#this function finds the average amount of streams an artist gets on the charts 
-
-# def get_averages(lst):
-#     average_streams = []
-#     for artist in lst:
-#         average = artist[1]/ artist[2]
-#         average_streams.append((artist[0],artist[1],artist[2],average))
-#     sorted_average = sorted(average_streams, key = lambda x:x[3], reverse = True)
-#     return(sorted_average)
     
 
 def setUpDatabase(db_name):
@@ -72,15 +62,21 @@ def setUpDatabase(db_name):
 
 def setUpSongTable(info, cur,conn):
     cur.execute('DROP TABLE IF EXISTS streams')
+    index = 0
     cur.execute('CREATE TABLE IF NOT EXISTS streams(Artist TEXT PRIMARY KEY, Streams INTEGER, Occurance INTEGER)')
     for artist in info:
-        cur.execute("INSERT INTO streams (Artist, Streams, Occurance) VALUES (?,?,?)", (artist[0], artist[1],artist[2]))
+        if index < 25:
+            cur.execute("INSERT INTO streams (Artist, Streams, Occurance) VALUES (?,?,?)", (artist[0], artist[1],artist[2]))
+            index += 1
+        else:
+            break
     conn.commit()
 
+
+#this function finds the average amount of streams an artist gets on the charts 
 def get_averages(cur,conn):
     cur.execute("SELECT Artist, Streams, Occurance FROM streams")
     info= cur.fetchall()
-    print("HIIIII") 
     average_lst = []
     for artist in info:
         average = artist[1] / artist[2]
@@ -95,14 +91,14 @@ def setUpAverageTable(average, cur,conn):
         cur.execute("INSERT INTO average (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
     conn.commit()
 
-#compares the top 10 artists that are from deezer that are on the spotify charts with how many average streams they get on Spotify and what their average rank is on Deezer
+#compares the artists that are similar from the deezer charts and spotify charts and plots their average streams from spotify and average ranks from deezer
 def setUpComparison(cur,conn):
     cur.execute('DROP TABLE IF EXISTS comparison')
     cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT PRIMARY KEY, average_streams INTEGER, average_rank INTEGER)')
     cur.execute('SELECT average.Artist, average.Average, average_ranks.Average FROM average JOIN average_ranks ON average.Artist = average_ranks.Artist')
     info = cur.fetchall()
     print(info)
-    for artist in info:
+    for artist in info[:10]:
         cur.execute("INSERT INTO comparison(Artist, average_streams, average_rank) VALUES(?,?,?)", (artist[0],artist[1],artist[2]))
     conn.commit()
 
@@ -113,9 +109,9 @@ def setUpComparison(cur,conn):
     for row2 in info:
         average_rank.append(row2[2])
     plt.scatter(average_rank, average_streams)
-    plt.xlabel("Average Rank")
-    plt.ylabel("Average Streams")
-    plt.title("Average Stream versus Average Rank of top 10 common artists from deezer to spotify")
+    plt.xlabel("Average Rank(by millions)")
+    plt.ylabel("Average Streams(by millions)")
+    plt.title("Average Stream versus Average Rank of common artists from deezer to spotify")
     plt.savefig("scatterplot.png")
     plt.show()
 
@@ -138,32 +134,16 @@ def barchart_averages():
     
     return ((label_name[0], average_streams[0]),(label_name[1], average_streams[1]), (label_name[2], average_streams[2]), (label_name[3], average_streams[3]), (label_name[4], average_streams[4]), (label_name[5], average_streams[5]), (label_name[6], average_streams[6]),(label_name[7], average_streams[7]), (label_name[8], average_streams[8]), (label_name[9], average_streams[9]))
 
-def makeScatterplot(info):
-    average_rank = []
-    average_streams = []
-    for row in info:
-        average_rank.append(row[1])
-    for row2 in info:
-        average_streams.append(row2[2])
-    plt.scatter(average_rank, average_streams)
-    plt.xlabel("Average Rank")
-    plt.ylabel("Average Streams")
-    plt.title("Average Stream versus Average Rank of top 10 common artists from deezer to spotify")
-    plt.savefig("scatterplot.png")
-    plt.show()
-
 
 if __name__ == "__main__":
     info  = find_artist_info()
     cur, conn = setUpDatabase('streams.db')
     setUpSongTable(info, cur, conn)
     average = get_averages(cur,conn)
-    #setUpSongTable(info, average, cur, conn)
     setUpAverageTable(average, cur, conn)
     setUpComparison(cur,conn)
     get_averages( cur,conn)
     barchart_averages()
-    #makeScatterplot(info)
     filename = open("spotifyfile.txt", 'w')
     filename.write("We found the amount of times an artist appeared on the top 200 charts and their total amount of streams on the top 200 charts. Using those two data points, we found each artist's average amount of streams on the top 200 charts and organized it by the top 10.")
     filename.write('\n')
