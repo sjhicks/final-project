@@ -1,3 +1,4 @@
+#Final Project - Samantha Hicks
 import requests
 from bs4 import BeautifulSoup
 import urllib.request
@@ -61,7 +62,7 @@ def setUpDatabase(db_name):
      return cur, conn
 
 def setUpSongTable(info, cur,conn):
-    #cur.execute('DROP TABLE IF EXISTS streams')
+    
     index = 0
     cur.execute('CREATE TABLE IF NOT EXISTS streams(Artist TEXT, Streams INTEGER, Occurance INTEGER)')
     for artist in info:
@@ -85,7 +86,6 @@ def get_averages(cur,conn):
     return(sorted_average)
 
 def setUpAverageTable(average, cur,conn):
-    #cur.execute('DROP TABLE IF EXISTS average_streams')
     cur.execute('CREATE TABLE IF NOT EXISTS average_streams(Artist TEXT, Average REAL)')
     for artist in average:
         cur.execute("INSERT INTO average_streams (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
@@ -93,7 +93,6 @@ def setUpAverageTable(average, cur,conn):
 
 #compares the artists that are similar from the deezer charts and spotify charts and plots their average streams from spotify and average ranks from deezer
 def setUpComparison(cur,conn):
-    #cur.execute('DROP TABLE IF EXISTS comparison')
     cur.execute('CREATE TABLE IF NOT EXISTS comparison(Artist TEXT, average_streams INTEGER, average_rank INTEGER)')
     cur.execute('SELECT average_streams.Artist, average_streams.Average, average_ranks.Average FROM average_streams JOIN average_ranks ON average_streams.Artist = average_ranks.Artist')
     info = cur.fetchall()

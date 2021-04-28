@@ -21,7 +21,6 @@ def setUpDatabase(db_name):
     return cur, conn
 
 def setUpSongsTable(tracks, cur, conn):
-    #cur.execute('DROP TABLE IF EXISTS Top100Songs')
     cur.execute('CREATE TABLE IF NOT EXISTS Top100Songs (title TEXT PRIMARY KEY, artist text, album TEXT, duration INTEGER, rank INTEGER)')
     for song in tracks['tracks']['data']:
         title = song['title']
@@ -85,7 +84,6 @@ def findAverageRank(cur, conn):
     return sorted_averages
 
 def setUpAverageTable(ranks, cur,conn):
-    #cur.execute('DROP TABLE IF EXISTS average_ranks')
     cur.execute('CREATE TABLE IF NOT EXISTS average_ranks(Artist TEXT PRIMARY KEY, Average REAL)')
     for artist in ranks:
         cur.execute("INSERT INTO average_ranks (Artist, Average) VALUES (?,?)", (artist[0],artist[1]))
